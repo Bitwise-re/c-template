@@ -1,0 +1,1 @@
+FILES:=glfw3.dll glfw3.dll.lib
