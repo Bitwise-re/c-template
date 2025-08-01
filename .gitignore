@@ -1,8 +1,11 @@
-#environnement related
+#~ environnement related
 .git/
 .vscode/
 
-#binaries
+#temporary for dev
+src/**
+
+#~ binaries
 **.o
 **.dll
 **.lib
@@ -10,17 +13,20 @@
 **.so
 bin/**
 
-#files generated from makefile
+#~ files generated from makefile
 **.dep
 
-#ignore all dist files except for the static content (all files in subfolders are presumed static content, otherwise specify the concerned files here)
+# ignore all dist files except for the static content (all files in subfolders are presumed static content, otherwise specify the concerned files here)
+# dist files are used for releases, not dev repo
 dist/*
 !dist/*/
 !dist/*/*
 
-#dev folders
+#~ dev folders
 temp/**
 test/**
 #! put test files you want to be shared with others here
+
+#~ exceptions
 
 !**.gitkeep
