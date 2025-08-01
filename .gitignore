@@ -3,7 +3,7 @@
 .vscode/
 
 #temporary for dev
-#src/**
+src../**
 
 #~ binaries
 **.o
