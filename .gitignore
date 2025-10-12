@@ -2,9 +2,6 @@
 .git/
 .vscode/
 
-#temporary for dev
-src/**
-
 #~ binaries
 **.o
 **.dll

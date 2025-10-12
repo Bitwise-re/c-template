@@ -25,6 +25,6 @@
 #endif
 
 //useless function to use as breakpoint with gdb ( >b debug )
-DEBUGAPI void debug();
+DEBUGAPI void breakpoint();
 
 #endif //__debug_h_

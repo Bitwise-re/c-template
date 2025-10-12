@@ -1,6 +1,6 @@
 include vars.mk
 
-.PHONY: debug all build reset clean cr rc
+.PHONY: debug all build reset clean cr rc $(OFILES)
 
 #~ RECIPES
 debug:
@@ -10,11 +10,11 @@ debug:
 
 all: $(OFILES) $(LIBS) $(EXECS)
 
-build:
-	$(MAKE) rc
+build: rc
 	$(MAKE) all
 	$(MAKE) clean
 	cp -r ./$(BINDIR)/* $(BUILDDIR) ||:
+	$(IMPLIBCLEANUP)
 	cp -r ./$(ASSETDIR)/* $(BUILDDIR) ||:
 	rm -r ./$(BINDIR)/* ||:
 
@@ -39,19 +39,22 @@ rc: reset clean
 #make the files in the bin folder
 $(EXECS) $(LIBS): %: $(BINDIR)/%
 
+#implibs are created at the same time as their corresponding dynamic library
+$(call format_lib,%).$(SLFEXT): $(call format_lib,%)
+
 #^ executables linking
 $(foreach exe,$(EXECS),$(BINDIR)/$(exe)): $$(call libexec-to-obj,$$@,%$(DOTEXE))
 	@echo "building $@ dependencies : $(EDEP)"
-	$(MAKE) $(EDEP)
+	$(if $(EDEP),$(MAKE) $(EDEP))
 	@echo "linking $^ along $(EDEP) into $@"
-	$(CC) -o $@ $^ $(foreach dep,$(filter $(LIBS),$(EDEP)),-l$(dep:$(call format_lib,%)=%)) $(foreach dep,$(filter-out $(LIBS) $(EXECS),$(EDEP)),$(shell $(MAKE) -C$(dir $(dep)) -qp 2> /dev/null | grep -w "__IMPL_LINK :=" | cut -c15-)) $(LFLAGS)
+	$(CC) -o $@ $^ $(call link-deps,$(EDEP)) $(LFLAGS)
 
 #^ libraries linking
 $(foreach lib,$(LIBS),$(BINDIR)/$(lib)): $$(call libexec-to-obj,$$@,$(call format_lib,%))
 	@echo "building $@ dependencies : $(LDEP)"
-	$(MAKE) $(LDEP)
+	$(if $(LDEP),$(MAKE) $(LDEP),@echo no dep to build)
 	@echo "linking $^ along $(LDEP) into $@"
-	$(CC) -shared -o $@ $^ $(foreach dep,$(filter $(LIBS),$(EDEP)),-l$(dep:$(call format_lib,%)=%)) $(foreach dep,$(filter-out $(LIBS) $(EXECS),$(EDEP)),$(shell $(MAKE) -C$(dir $(dep)) -qp 2> /dev/null | grep -w "__IMPL_LINK :=" | cut -c15-)) $(LFLAGS)
+	$(CC) -shared -o $@ $^ $(call link-deps,$(LDEP)) $(LFLAGS) $(CREATEIMPLIB)
  
 
 #^ object files assembling
@@ -80,9 +83,9 @@ $(foreach lib,$(LIBS),$(BINDIR)/$(lib)): $$(call libexec-to-obj,$$@,$(call forma
 
 #Ofiles :
 $(OFILES): %: $$(shell $(MAKE) -C$$(dir $$@) -qp 2> /dev/null | grep -w "__DEPS:=" | cut -c8-)
-	@if [ $$(basename $@ | $(MAKE) -C$(dir $@) -n &>>/dev/null ; echo $$?) -eq 0 ]; then \
+	@if [ $$($(MAKE) -C$(dir $@) $$(basename $@) -n &>>/dev/null ; echo $$?) -eq 0 ]; then \
 		echo "building $@ externally" ; \
-		basename $@ | $(MAKE) -C$(dir $@) ; \
+		$(MAKE) -C$(dir $@) $$(basename $@); \
 	else \
 		echo "Error : no rule found for $$(basename $@) in $(dir $@)" ; \
 		false ; \
@@ -100,7 +103,7 @@ __ne_%:
 	@./$(SCRIPTDIR)/createnode.sh -E ./$(SRCDIR)/$(patsubst __ne_%,%,$@)
 
 __no_%:
-	@./$(SCRIPTDIR)/createnode.sh -O ./$((SRCDIR)/$(patsubst __no_%,%,$@)
+	@./$(SCRIPTDIR)/createnode.sh -O ./$(SRCDIR)/$(patsubst __no_%,%,$@)
 
 #*checks if all required scripts are present
 ifeq (,$(wildcard $(SCRIPTDIR)/getnodes.sh))
