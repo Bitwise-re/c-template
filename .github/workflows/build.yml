@@ -18,7 +18,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Install glfw
-      run: sudo apt install -y libglfw3
+      run: sudo apt install -y libglfw3-dev
 
     - name: build
       run: make build
