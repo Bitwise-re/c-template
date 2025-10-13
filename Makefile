@@ -83,7 +83,7 @@ $(foreach lib,$(LIBS),$(BINDIR)/$(lib)): $$(call libexec-to-obj,$$@,$(call forma
 
 #Ofiles :
 $(OFILES): %: $$(shell $(MAKE) -C$$(dir $$@) -qp 2> /dev/null | grep -w "__DEPS:=" | cut -c8-)
-	@if [ $$($(MAKE) -C$(dir $@) $$(basename $@) -n &>>/dev/null ; echo $$?) -eq 0 ]; then \
+	@if [ $$($(MAKE) -C$(dir $@) $$(basename $@) -n 2>/dev/null 1>&2 ||: && echo $$?) -eq 0 ]; then \
 		echo "building $@ externally" ; \
 		$(MAKE) -C$(dir $@) $$(basename $@); \
 	else \
