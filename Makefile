@@ -7,7 +7,6 @@ debug:
 	@echo "execs : $(EXECS) | from nodes : $(ENODES)"
 	@echo "libs : $(LIBS) | from nodes : $(LNODES)"
 	@echo "others : $(OFILES) | from nodes : $(ONODES)"
-	@echo "debug : $(patsubst)$(call format_lib,%)"
 
 all: $(OFILES) $(LIBS) $(EXECS)
 
@@ -28,7 +27,7 @@ clean:
 	@rm -f $(foreach node,$(ENODES) $(LNODES),$(node)/*.$(DEPEXT) $(node)/*.$(PPFEXT) $(node)/*.$(ASMEXT) $(node)/*.$(OBJEXT))
 	
 	@for node in $(ONODES) ; do \
-		if [ $$($(MAKE) -qC $$node clean &>>/dev/null ; echo $$?) -eq 1 ]; then \
+		if [ $$($(MAKE) -qC $$node clean 2>/dev/null 1>&2 ||: && echo $$?) -eq 1 ]; then \
 			echo "cleaning up $$node..."; \
 			$(MAKE) -C $$node clean ; \
 		fi \
