@@ -62,7 +62,12 @@ EDEP = $(call obj-dep,$(call libexec-to-obj,$@,%$(DOTEXE)),$(notdir $@))
 LDEP = $(call obj-dep,$(call libexec-to-obj,$@,$(call format_lib,%)),$(notdir $@))
 
 #generates all the files to link against from EDEP or LDEP -$(1)-
-link-deps = $(foreach file,$(foreach dep,$(filter $(LIBS),$(1)),$(call LINKLIB,$(dep))) $(foreach dep,$(filter-out $(LIBS) $(EXECS),$(1)),$(shell $(MAKE) -C$(dir $(dep)) -qp 2> /dev/null | grep -w "__IMPL_LINK :=" | grep -vw "link-deps" | cut -c15-)),$(BINDIR)/$(file))
+pre-link-deps = $(foreach dep,$(filter $(LIBS),$(1)),$(call LINKLIB,$(dep))) $(foreach dep,$(filter-out $(LIBS) $(EXECS),$(1)),$(shell $(MAKE) -C$(dir $(dep)) -qp 2> /dev/null | grep -w "__IMPL_LINK :=" | grep -vw "link-deps" | cut -c15-))
+ifeq ($(OS),Windows_NT)
+link-deps = $(foreach file,$(call pre-link-deps,$(1)),$(BINDIR)/$(file))
+else
+link-deps = $(call pre-link-deps,$(1))
+endif
 
 #^ nodes
 LNODES:=$(shell ./scripts/getnodes.sh -L $(SRCDIR) 2> /dev/null ||:)
@@ -90,7 +95,7 @@ endif
 ifeq ($(OS),Windows_NT)
 	LINKLIB=$(1).$(SLFEXT)
 else
-	LINKLIB=-l$(patsubst,$(call format_lib,%),%,$(1))
+	LINKLIB=-l$(patsubst $(call format_lib,%),%,$(1))
 endif
 
 ifeq ($(OS),Windows_NT)

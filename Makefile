@@ -7,6 +7,7 @@ debug:
 	@echo "execs : $(EXECS) | from nodes : $(ENODES)"
 	@echo "libs : $(LIBS) | from nodes : $(LNODES)"
 	@echo "others : $(OFILES) | from nodes : $(ONODES)"
+	@echo "debug : $(patsubst)$(call format_lib,%)"
 
 all: $(OFILES) $(LIBS) $(EXECS)
 

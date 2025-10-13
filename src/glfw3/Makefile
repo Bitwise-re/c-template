@@ -1,9 +1,9 @@
 include ../../vars.mk
 
 ifeq ($(OS),Windows_NT)
-	GLFW=glfw3
+GLFW=glfw3
 else
-	GLFW=glfw
+GLFW=glfw
 endif
 
 #required variables from main makefile
@@ -12,7 +12,7 @@ __DEPS:=
 __IMPL_LINK:=$(call LINKLIB,$(call format_lib,$(GLFW)))
 
 ifneq ($(OS),Windows_NT)
-	.PHONY: $(__FILES)
+.PHONY: $(__FILES)
 endif
 
 .SECONDARY: $(__FILES)
@@ -35,7 +35,7 @@ else
 
 
 $(__FILES):
-	@if ![[ $(gcc /dev/null $$(__IMPL_LINK) 2>&1 | grep _start 1>/dev/null ; echo ?) -eq 0 ]]; then \
+	@if ! [[ $$(gcc /dev/null $(__IMPL_LINK) 2>&1 | grep _start 1>/dev/null ; echo $?) -eq 0 ]]; then \
 		echo "$(__FILES) not installed, please check your package manager"; \
 	else \
 		echo "$(__FILES) are all checked"; \
