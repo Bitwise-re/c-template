@@ -22,7 +22,7 @@ ifeq ($(OS),Windows_NT)
 	touch $@
 
 $(__FILES): ../../$(BINDIR)/glfw3.dll  ../../$(BINDIR)/glfw3.dll.a
-	@if [[ -f ./glfw3.dll ]] && [[ -f ./glfw3dll.lib ]]; then \
+	@if [ -f ./glfw3.dll ] && [ -f ./glfw3dll.lib ]; then \
 		cp -p ./glfw3.dll ../../$(BINDIR)/glfw3.dll; \
 		cp -p ./glfw3dll.lib ../../$(BINDIR)/glfw3.dll.a; \
 		echo "copying binaries to $(BINDIR) ..."; \
@@ -35,7 +35,7 @@ else
 
 
 $(__FILES):
-	if ! [[ $$(gcc /dev/null $(__IMPL_LINK) 2>&1 | grep _start 1>/dev/null ; echo $?) -eq 0 ]]; then \
+	if ! [ $$(gcc /dev/null $(__IMPL_LINK) 2>&1 | grep _start 1>/dev/null ; echo $?) -eq 0 ]; then \
 		echo "$(__FILES) not installed, please check your package manager"; \
 	else \
 		echo "$(__FILES) are all checked"; \
