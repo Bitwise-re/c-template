@@ -84,13 +84,11 @@ jobs:
           path: ./application-windows.zip
 
       - name: Create release body
-        run: |
-          echo "# test release" > body.md
-          ls -l
+        run: echo "# test release" > body.md
 
       - name: Create the release
         uses: ncipollo/release-action@v1
         with:
           artifacts: "./build/application-windows.zip,./application-linux.tar.gz"
           bodyFile: "body.md"
-          tag: "test-release"
+          tag: "v{sha}"
