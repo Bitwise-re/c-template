@@ -42,6 +42,7 @@ jobs:
         update: true
         install: >-
           make
+          gcc
 
     - shell: msys2 {0}
       run: |
