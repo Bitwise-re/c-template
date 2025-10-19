@@ -79,12 +79,12 @@ jobs:
           name: windows-build
           path: ./
 
-      - name: Create release body
-        run: echo "# test release" > body.md
-
       - name: Create the release
         uses: ncipollo/release-action@v1
         with:
           artifacts: "./application-windows.zip,./application-linux.tar.gz"
-          bodyFile: "body.md"
-          tag: "v${{ github.event.head_commit.id }}"
+          commit: ${{ github.event.head_commit.id }}
+          generateReleaseNotes: true
+          makeLatest: true
+          name: "${{ github.event.repository }} - ${{ github.event.head_commit.message }}"
+          tag: "${{ github.event.head_commit.id }}"
