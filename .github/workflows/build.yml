@@ -21,7 +21,7 @@ jobs:
       run: make build
 
     - name: Create tarball
-      run: tar -acvf ./application-linux.tar.gz ./build/linux/*
+      run: ( cd build/linux ; tar -acvf ../../application-linux.tar.gz ./* )
 
     - name: Store Linux build
       uses: actions/upload-artifact@v4
@@ -52,7 +52,7 @@ jobs:
       
     - name: Compress build into zip archive
       shell: msys2 {0}
-      run: zip -r ./application-windows.zip ./build/windows/*
+      run: ( cd build/windows ; zip -r ../../application-windows.zip ./* )
     
     - name: Store Windows build
       uses: actions/upload-artifact@v4
