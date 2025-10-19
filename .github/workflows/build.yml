@@ -29,7 +29,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: linux-build
-        path: ./build/application-linux.tar.gz
+        path: ./L.artifact
 
   windows-build_x86:
     runs-on: windows-latest
@@ -62,7 +62,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: windows-build
-        path: ./build/application-windows.zip
+        path: ./W.artifact
   
   deployement:
     runs-on: ubuntu-latest
