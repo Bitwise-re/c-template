@@ -2,7 +2,7 @@ name: Application Deployment
 
 on:
   push:
-    branches: [ "1.1" ]
+    branches: [ "main" ]
 
 permissions:
   contents: write
