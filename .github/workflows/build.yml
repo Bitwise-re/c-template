@@ -21,9 +21,7 @@ jobs:
       run: make build
 
     - name: Create tarball
-      run: |
-        tar -acvf ./build/application-linux.tar.gz ./build/linux/*
-        mv ./build/application-linux.tar.gz ./L.artifact
+      run: tar -acvf ./build/application-linux.tar.gz ./build/linux/*
 
     - name: Store Linux build
       uses: actions/upload-artifact@v4
@@ -54,9 +52,7 @@ jobs:
       
     - name: Compress build into zip archive
       shell: msys2 {0}
-      run: |
-        zip -r ./build/application-windows.zip ./build/windows/*
-        mv ./build/application-windows.zip ./W.artifact
+      run: zip -r ./build/application-windows.zip ./build/windows/*
     
     - name: Store Windows build
       uses: actions/upload-artifact@v4
@@ -75,27 +71,20 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: linux-build
-          path: ./application-linux.tar.gz
+          path: ./
 
       - name: Get windows zip archive
         uses: actions/download-artifact@v4
         with:
           name: windows-build
-          path: ./application-windows.zip
-
-
-      - name: Install tree
-        run: sudo apt install -y tree
+          path: ./
 
       - name: Create release body
-        run: |
-          echo "# test release" > body.md
-          ls -l
-          tree
+        run: echo "# test release" > body.md
 
       - name: Create the release
         uses: ncipollo/release-action@v1
         with:
           artifacts: "./application-windows.zip,./application-linux.tar.gz"
           bodyFile: "body.md"
-          tag: "v${sha}"
+          tag: "v${{ github.event.head_commit.id }}"
