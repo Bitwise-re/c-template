@@ -1,4 +1,5 @@
 # C-template
 
 TODO :
-- Documentation and README
+- Documentation
+- README
