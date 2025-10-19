@@ -87,4 +87,4 @@ jobs:
           generateReleaseNotes: true
           makeLatest: true
           name: "${{ github.event.repository }} - ${{ github.event.head_commit.message }}"
-          tag: "${{ github.event.head_commit.id }}"
+          tag: "v${{ github.event.head_commit.id }}"
