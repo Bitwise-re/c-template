@@ -14,21 +14,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Install glfw
-      run: sudo apt install -y libglfw3-dev
+    - name: Install glfw and tar
+      run: sudo apt install -y libglfw3-dev tar
 
     - name: build
-      run: |
-        make build
+      run: make build
 
     - name: Create tarball
-      uses: a7ul/tar-action@v1.1.0
-      with:
-        command: c
-        cwd: ./build/
-        files: |
-          linux
-        outPath: application-linux.tar.gz
+      run: tar -acvf ./build/application-linux.tar.gz ./build/linux/*
 
     - name: Store Linux build
       uses: actions/upload-artifact@v4
