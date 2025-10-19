@@ -19,7 +19,9 @@ jobs:
       run: sudo apt install -y libglfw3-dev
 
     - name: build
-      run: make build
+      run: |
+        make build
+        rm -r build/assets/
 
     - name: Push build to dist branch
       uses: s0/git-publish-subdir-action@develop
@@ -28,7 +30,7 @@ jobs:
         BRANCH: dist
         FOLDER: build
         GITHUB_TOKEN: ${{ secrets.PAT_CONTENT_W }}
-        MESSAGE: "Build: ({sha}) {msg}"
+        MESSAGE: "Linux Build: ({sha}) {msg}"
 
   windows-build_x86:
     runs-on: windows-latest
@@ -56,4 +58,5 @@ jobs:
         BRANCH: dist
         FOLDER: build
         GITHUB_TOKEN: ${{ secrets.PAT_CONTENT_W }}
-        MESSAGE: "Build: ({sha}) {msg}"
+        MESSAGE: "Windows Build: ({sha}) {msg}"
+        TAG: "tags/endofbuild"
