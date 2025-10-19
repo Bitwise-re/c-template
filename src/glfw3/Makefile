@@ -23,13 +23,18 @@ ifeq ($(OS),Windows_NT)
 
 $(__FILES): ../../$(BINDIR)/glfw3.dll  ../../$(BINDIR)/glfw3.dll.a
 	@if [ -f ./glfw3.dll ] && [ -f ./glfw3dll.lib ]; then \
-		cp -p ./glfw3.dll ../../$(BINDIR)/glfw3.dll; \
-		cp -p ./glfw3dll.lib ../../$(BINDIR)/glfw3.dll.a; \
-		echo "copying binaries to $(BINDIR) ..."; \
+		echo "glfw binaries found." ; \
+	elif [ "$(BITWISE_GLFW)" == "True" ]; then \
+		echo "glfw binaries absent, downloading them from bitwise..." ; \
+		wget https://codex.bitwise.re/glfw3.dll ;\
+		wget https://codex.bitwise.re/glfw3dll.lib ;\
 	else \
-		echo "glfw binaries not found, please download and put them in $(pwd) : https://www.glfw.org/download.html"; \
+		echo "ERROR : glfw binaries not found, please download them at https://www.glfw.org/download.html and put them in $(pwd)."; \
+		exit 1 ;\
 	fi
-
+	cp -p ./glfw3.dll ../../$(BINDIR)/glfw3.dll;
+	cp -p ./glfw3dll.lib ../../$(BINDIR)/glfw3.dll.a;
+	echo "copying binaries to $(BINDIR) ...";
 
 else
 

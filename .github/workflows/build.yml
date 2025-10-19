@@ -11,9 +11,7 @@ permissions:
 
 jobs:
   linux-build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
 
@@ -23,6 +21,29 @@ jobs:
     - name: build
       run: make build
 
+    - name: Push build to dist branch
+      uses: s0/git-publish-subdir-action@develop
+      env:
+        REPO: self
+        BRANCH: dist
+        FOLDER: build
+        GITHUB_TOKEN: ${{ secrets.PAT_CONTENT_W }}
+        MESSAGE: "Build: ({sha}) {msg}"
+
+  windows-build_x86:
+    runs-on: windows-latest
+    needs: linux-build
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: msys2/setup-msys2@v2
+      with:
+        msystem: UCRT64
+
+    - shell: msys2 {0}
+      run: |
+        make build BITWISE_GLFW=True
+    
     - name: Push build to dist branch
       uses: s0/git-publish-subdir-action@develop
       env:
