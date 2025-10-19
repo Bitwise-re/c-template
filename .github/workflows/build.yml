@@ -1,9 +1,7 @@
-name: Makefile CI
+name: Application Build & Deployment
 
 on:
   push:
-    tags:
-        - "*"
     branches: [ "1.1" ]
 
 permissions:
@@ -21,20 +19,23 @@ jobs:
     - name: build
       run: |
         make build
-        rm -r build/assets/
 
-    - name: Push build to dist branch
-      uses: s0/git-publish-subdir-action@develop
-      env:
-        REPO: self
-        BRANCH: dist
-        FOLDER: build
-        GITHUB_TOKEN: ${{ secrets.PAT_CONTENT_W }}
-        MESSAGE: "Linux Build: ({sha}) {msg}"
+    - name: Create tarball
+      uses: a7ul/tar-action@v1.1.0
+      with:
+        command: c
+        cwd: ./build/linux
+        files: |
+          ./*
+        outPath: application-linux.tar.gz
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: linux-build
+        path: ./build/application-linux.tar.gz
 
   windows-build_x86:
     runs-on: windows-latest
-    needs: linux-build
     steps:
     - uses: actions/checkout@v4
 
@@ -49,14 +50,40 @@ jobs:
     - shell: msys2 {0}
       run: |
         make build BITWISE_GLFW=True
-        rm -r build/assets/
     
-    - name: Push build to dist branch
-      uses: s0/git-publish-subdir-action@develop
-      env:
-        REPO: self
-        BRANCH: dist
-        FOLDER: build
-        GITHUB_TOKEN: ${{ secrets.PAT_CONTENT_W }}
-        MESSAGE: "Windows Build: ({sha}) {msg}"
-        TAG: "tags/endofbuild"
+    - uses: montudor/action-zip@v1
+      with:
+        args: zip -qq -r ./build/application-windows.zip ./build/windows
+    
+    - uses: actions/upload-artifact@v4
+      with:
+        name: windows-build
+        path: ./build/application-windows.zip
+
+  
+  deployement:
+    runs-on: ubuntu-latest
+    needs: [ windows-build_x86, linux-build ]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: get linux tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build
+          path: ./application-linux.tar.gz
+
+      - name: linux-build
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build
+          path: ./application-windows.zip
+
+      - name: create release body
+        run: echo "# test release" > body.md
+      
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "release.tar.gz,foo/*.txt"
+          bodyFile: "body.md"
