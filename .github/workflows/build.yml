@@ -88,3 +88,4 @@ jobs:
         with:
           artifacts: "./build/application-windows.zip,./application-linux.tar.gz"
           bodyFile: "body.md"
+          tag: "test-release"
