@@ -82,24 +82,15 @@ OFILES:=$(call node-to-ofiles,$(ONODES))
 #^flags
 PPFLAGS:=-I$(SRCDIR) $(foreach node,$(ANODES),-I$(node))
 CMPFLAGS:=-g -Wall -fPIC
+NFLAGS=$(shell echo $$(cat $(dir $^)/flags.gcc 2>/dev/null ||:))
 ifeq ($(OS),Windows_NT)
 	LFLAGS:=-Lbin -mwindows -Wl,-rpath='$${ORIGIN}'
+	CREATEIMPLIB=-Wl,--out-implib,$@.$(SLFEXT)
+	LINKLIB=$(1).$(SLFEXT)
+	IMPLIBCLEANUP:=echo "removing build-purpose files..." && rm ./$(BUILDDIR)/$(call LINKLIB,$(call format_lib,*)) 2>/dev/null ||:
 else
 	LFLAGS:=-Lbin -Wl,-rpath='$${ORIGIN}'
-endif
-
-ifeq ($(OS),Windows_NT)
-	CREATEIMPLIB=-Wl,--out-implib,$@.$(SLFEXT)
-endif
-
-ifeq ($(OS),Windows_NT)
-	LINKLIB=$(1).$(SLFEXT)
-else
 	LINKLIB=-l$(patsubst $(call format_lib,%),%,$(1))
-endif
-
-ifeq ($(OS),Windows_NT)
-	IMPLIBCLEANUP:=echo "removing build-purpose files..." && rm ./$(BUILDDIR)/$(call LINKLIB,$(call format_lib,*)) 2>/dev/null ||:
 endif
 
 Vdebug:

@@ -50,7 +50,7 @@ $(foreach exe,$(EXECS),$(BINDIR)/$(exe)): $$(call libexec-to-obj,$$@,%$(DOTEXE))
 	@echo "building $@ dependencies : $(EDEP)"
 	$(if $(EDEP),$(MAKE) $(EDEP))
 	@echo "linking $^ along $(EDEP) into $@"
-	$(CC) -o $@ $^ $(call link-deps,$(EDEP)) $(LFLAGS)
+	$(CC) -o $@ $^ $(call link-deps,$(EDEP)) $(NFLAGS) $(LFLAGS)
 
 #^ libraries linking
 $(foreach lib,$(LIBS),$(BINDIR)/$(lib)): $$(call libexec-to-obj,$$@,$(call format_lib,%))

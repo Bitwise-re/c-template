@@ -41,7 +41,7 @@ jobs:
       run: echo insert post build tests here
 
   post-build-windows:
-    name: Post Build Check On Linux
+    name: Post Build Check On Windows
     needs: build
     runs-on: ubuntu-latest
     steps:

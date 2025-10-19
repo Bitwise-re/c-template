@@ -5,6 +5,6 @@
 #  define LIBAPI extern
 #endif //LIBAPI
 
-LIBAPI void libfun();
+LIBAPI int libfun();
 
 #endif //__lib_h_
