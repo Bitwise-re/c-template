@@ -8,6 +8,9 @@ debug:
 	@echo "libs : $(LIBS) | from nodes : $(LNODES)"
 	@echo "others : $(OFILES) | from nodes : $(ONODES)"
 
+test:
+	@echo "No test script in ./Makefile"
+
 all: $(OFILES) $(LIBS) $(EXECS)
 
 build: rc
