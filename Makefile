@@ -4,9 +4,7 @@ include vars.mk
 
 #~ RECIPES
 debug:
-	@echo "execs : $(EXECS) | from nodes : $(ENODES)"
-	@echo "libs : $(LIBS) | from nodes : $(LNODES)"
-	@echo "others : $(OFILES) | from nodes : $(ONODES)"
+	@echo "No debug script in ./Makefile"
 
 test:
 	@echo "No test script in ./Makefile"

@@ -82,16 +82,18 @@ OFILES:=$(call node-to-ofiles,$(ONODES))
 #^flags
 PPFLAGS:=-I$(SRCDIR) $(foreach node,$(ANODES),-I$(node))
 CMPFLAGS:=-g -Wall -fPIC
-NFLAGS=$(shell echo $$(cat $(dir $^)/flags.gcc 2>/dev/null ||:))
 ifeq ($(OS),Windows_NT)
+	PREFLAG:=W_
 	LFLAGS:=-Lbin -mwindows -Wl,-rpath='$${ORIGIN}'
 	CREATEIMPLIB=-Wl,--out-implib,$@.$(SLFEXT)
 	LINKLIB=$(1).$(SLFEXT)
 	IMPLIBCLEANUP:=echo "removing build-purpose files..." && rm ./$(BUILDDIR)/$(call LINKLIB,$(call format_lib,*)) 2>/dev/null ||:
 else
+	PREFLAG:=L_
 	LFLAGS:=-Lbin -Wl,-rpath='$${ORIGIN}'
 	LINKLIB=-l$(patsubst $(call format_lib,%),%,$(1))
 endif
+NFLAGS=$(patsubst $(PREFLAG)%,%,$(filter $(PREFLAG)%,$(shell echo $$(cat $(dir $^)/flags.gcc 2>/dev/null ||:))))
 
 Vdebug:
 	@echo No debug recipe in vars.mk
