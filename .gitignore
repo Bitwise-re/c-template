@@ -10,14 +10,9 @@
 **.so
 bin/**
 
-#~ files generated from makefile
-**.dep
-
-# ignore all dist files except for the static content (all files in subfolders are presumed static content, otherwise specify the concerned files here)
-# dist files are used for releases, not dev repo
-dist/*
-!dist/*/
-!dist/*/*
+#build files
+build/**
+!build/assets/**
 
 #~ dev folders
 temp/**
