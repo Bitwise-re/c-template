@@ -1,8 +1,7 @@
-name: Application Build & Deployment
+name: Application Build
 
 on:
-  push:
-    branches: [ "1.1" ]
+  workflow_call:
 
 permissions:
   contents: write
@@ -59,32 +58,3 @@ jobs:
       with:
         name: windows-build
         path: ./application-windows.zip
-  
-  deployement:
-    runs-on: ubuntu-latest
-    needs: [ windows-build_x86, linux-build ]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Get linux tarball
-        uses: actions/download-artifact@v4
-        with:
-          name: linux-build
-          path: ./
-
-      - name: Get windows zip archive
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-build
-          path: ./
-
-      - name: Create the release
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "./application-windows.zip,./application-linux.tar.gz"
-          commit: ${{ github.event.head_commit.id }}
-          generateReleaseNotes: true
-          makeLatest: true
-          name: "${{ github.event.repository }} - ${{ github.event.head_commit.message }}"
-          tag: "${{ github.event.head_commit.id }}"

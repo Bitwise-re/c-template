@@ -1,0 +1,8 @@
+name: Test battery
+
+on: [ pull_request, push ]
+
+jobs:
+  build:
+    name: Check Build Chain
+    uses: ./.github/workflows/build.yml
