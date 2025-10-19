@@ -2,6 +2,9 @@ name: Test battery
 
 on: [ pull_request, push ]
 
+permissions:
+  contents: write
+  
 jobs:
   build:
     name: Check Build Chain
