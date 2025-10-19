@@ -83,12 +83,19 @@ jobs:
           name: windows-build
           path: ./application-windows.zip
 
+
+      - name: Install tree
+        run: sudo apt install -y tree
+
       - name: Create release body
-        run: echo "# test release" > body.md
+        run: |
+          echo "# test release" > body.md
+          ls -l
+          tree
 
       - name: Create the release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "./build/application-windows.zip,./application-linux.tar.gz"
+          artifacts: "./application-windows.zip,./application-linux.tar.gz"
           bodyFile: "body.md"
-          tag: "v{sha}"
+          tag: "v${sha}"
