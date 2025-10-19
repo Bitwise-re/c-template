@@ -21,13 +21,13 @@ jobs:
       run: make build
 
     - name: Create tarball
-      run: tar -acvf ./build/application-linux.tar.gz ./build/linux/*
+      run: tar -acvf ./application-linux.tar.gz ./build/linux/*
 
     - name: Store Linux build
       uses: actions/upload-artifact@v4
       with:
         name: linux-build
-        path: ./L.artifact
+        path: ./application-linux.tar.gz
 
   windows-build_x86:
     runs-on: windows-latest
@@ -52,13 +52,13 @@ jobs:
       
     - name: Compress build into zip archive
       shell: msys2 {0}
-      run: zip -r ./build/application-windows.zip ./build/windows/*
+      run: zip -r ./application-windows.zip ./build/windows/*
     
     - name: Store Windows build
       uses: actions/upload-artifact@v4
       with:
         name: windows-build
-        path: ./W.artifact
+        path: ./application-windows.zip
   
   deployement:
     runs-on: ubuntu-latest
