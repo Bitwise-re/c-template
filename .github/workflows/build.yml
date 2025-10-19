@@ -47,6 +47,7 @@ jobs:
     - shell: msys2 {0}
       run: |
         make build BITWISE_GLFW=True
+        rm -r build/assets/
     
     - name: Push build to dist branch
       uses: s0/git-publish-subdir-action@develop
