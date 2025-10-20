@@ -13,11 +13,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Install glfw and tar
-      run: sudo apt install -y libglfw3-dev tar
+    - name: Install tar
+      run: sudo apt install -y tar
 
     - name: build
-      run: make build
+      run: make build DEPLOY=True
 
     - name: Create tarball
       run: ( cd build/linux ; tar -acvf ../../application-linux.tar.gz ./* )
@@ -47,7 +47,7 @@ jobs:
     - name: Build
       shell: msys2 {0}
       run: |
-        make build BITWISE_GLFW=True
+        make build DEPLOY=True
       
     - name: Compress build into zip archive
       shell: msys2 {0}
