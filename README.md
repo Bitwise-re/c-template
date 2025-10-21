@@ -1,6 +1,6 @@
 # C-template
 
-This is a template intended for multi-purpose C/C++ projects
+This is a template intended for multi-purpose C projects, that can easily be modified for C++.
 
 ## Installation
 
@@ -68,8 +68,6 @@ Other nodes are custom nodes holding their own Makefile which should include 3 s
 `__DEPS` -> holds the files on which depend the files above.\
 `__IMPL_LINK` -> How to implement the node's files in the linking step of another file which depend on those files. \
 A node containing a Makefile is processed as an *Other node*.
-> [!CAUTION]
-> Behaviour of an *Other node* build process is not defined when those variables are not in the node's Makefile.
 
 - __Executable node__ \
 Executable nodes hold the source code for an executable.
@@ -81,6 +79,11 @@ Any node which isn't an *Executable node* nor an *Other node* is processed as a 
 ### The Makefiles
 
 There are 2 main Makefiles in this template : [./Makefile](https://github.com/Bitwise-re/c-template/blob/main/Makefile) wich holds the recipes and [./vars.mk](https://github.com/Bitwise-re/c-template/blob/main/vars.mk) which holds all structure related variables as well as functions for the recipes.
+
+Project structure, extensions used and flags for each step of the build chain can be found in [./vars.mk](https://github.com/Bitwise-re/c-template/blob/main/vars.mk).
+
+> [!TIP]
+> While the flags for each step of the build chain are the same for every node, you can add flags for the linking step by adding them in `{step_id}.flags`, where *step_id* can be found in [./vars.mk](https://github.com/Bitwise-re/c-template/blob/main/vars.mk).. Each flags with the prefix W_ will be used for windows builds and L_ for linux builds.
 
 ### Adding files to be built
 
@@ -162,6 +165,17 @@ flowchart TD;
     MKO_END -..-> FEN
 ```
 
+## Included Github Workflows
+
+This templates comes with Github Workflows.
+- Test :
+  Triggered on PR, used to verify modifications to important branches does not bring bugs.
+  Passes the code through a series of tests, including the whole buildling process, in different environnements.
+- Build :
+  Triggered on demand by other workflows, covers the whole building process for the linux and windows app.
+- Deploy :
+  Triggered by a push on the main branch, calls the build process and package the output into a release.
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first
@@ -173,4 +187,5 @@ to discuss what you would like to change.
 ## License
 
 This project is under [GNU 3 License](https://github.com/Bitwise-re/c-template/blob/main/LICENSE)
+
 
