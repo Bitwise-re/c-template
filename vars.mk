@@ -93,7 +93,12 @@ else
 	LFLAGS:=-Lbin -Wl,-rpath='$${ORIGIN}'
 	LINKLIB=-l$(patsubst $(call format_lib,%),%,$(1))
 endif
-NFLAGS=$(patsubst $(PREFLAG)%,%,$(filter $(PREFLAG)%,$(shell echo $$(cat $(dir $^)/flags.gcc 2>/dev/null ||:))))
+LINKING_STEP_FLAG_ID:=lnk
+ASSEMBLING_STEP_FLAG_ID:=asm
+COMPILING_STEP_FLAG_ID:=cpl
+PREPROCESSING_STEP_FLAG_ID:=pp
+DEPENDENCY_STEP_FLAG_ID:=dep
+NFLAGS_lnk=$(patsubst $(PREFLAG)%,%,$(filter $(PREFLAG)%,$(shell echo $$(cat $(dir $^)/$(1).flags 2>/dev/null ||:))))
 
 Vdebug:
 	@echo No debug recipe in vars.mk
