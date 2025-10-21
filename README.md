@@ -112,10 +112,11 @@ flowchart TD;
     CLI --> CPA@{ shape: proc, label: "Copy assets to build folder" }
     CPA --> CLB@{ shape: proc, label: "Empty bin folder" }
     CLB --> END@{ shape: double-circle, label: "Done" }
+    CLN -..-> RCG_CLN@{ shape: f-circ, label: "Clean" }
     subgraph RCG [ Clean/Reset ]
         RCG_START((make cr)) --> RCG_BIN@{ shape: proc, label: "Empty bin directory" }
         RCG_BIN --> RCG_BLD@{ shape: proc, label: "Empty build directory" }
-        RCG_BLD --> RCG_CLN@{ shape: f-circ, label: "Clean" }
+        RCG_BLD --> RCG_CLN
         RCG_CLN --> RCG_FEN@{ shape: hex, label: "For each Executable and Library node" }
         RCG_FEN -->|Next| RCG_DLD@{ shape: proc, label: "Delete dependency files" }
         RCG_DLD --> RCG_DLI@{ shape: proc, label: "Delete pre-processor files" }
@@ -132,7 +133,7 @@ flowchart TD;
         MKA_FEN -->|Next| MKA_INO@{ shape: diamond, label: "Is it an Other node ?" }
         MKA_INO -->|Yes| MKA_BON@{ shape: procs, label: "Build Other node" }
         MKA_INO -->|No| MKA_BDN@{ shape: procs, label: "Build Executable/Library node" }
-        MKA_FEN -->|Done| MKA_END@{ shape: double-circle, label: "Done" }
+        MKA_FEN ---->|Done| MKA_END@{ shape: double-circle, label: "Done" }
     
         subgraph MKO [ Build an Other node ]
             MKO_START(("make %")) --> MKO_GTN@{ shape: proc, label: "Get associated node" }
@@ -162,7 +163,7 @@ flowchart TD;
         MKO_END -..-> MKA_FEN
     end
     RC -..-> RCG_START
-    CLN -..-> RCG_CLN
+    
     MKA -..-> MKA_START
 ```
 
@@ -188,6 +189,7 @@ to discuss what you would like to change.
 ## License
 
 This project is under [GNU 3 License](https://github.com/Bitwise-re/c-template/blob/main/LICENSE)
+
 
 
 
