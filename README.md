@@ -133,36 +133,37 @@ flowchart TD;
         MKA_INO -->|Yes| MKA_BON@{ shape: procs, label: "Build Other node" }
         MKA_INO -->|No| MKA_BDN@{ shape: procs, label: "Build Executable/Library node" }
         MKA_FEN -->|Done| MKA_END@{ shape: double-circle, label: "Done" }
-    end
-    subgraph MKO [ Build an Other node ]
-        MKO_START(("make %")) --> MKO_GTN@{ shape: proc, label: "Get associated node" }
-        MKO_GTN --> MKO_GTD@{ shape: proc, label: "Get dependencies from the node's Makefile" }
-        MKO_GTD --> MKO_BDD@{ shape: procs, label: "Build dependencies" }
-        MKO_BDD --> MKO_BLD@{ shape: procs, label: "Execute 'make %' in the node" }
-        MKO_BLD --> MKO_END@{ shape: double-circle, label: "Done" }
-    end
-    subgraph MKN [ Build a Library/Executable node ]
-        MKN_START(("make %(.exe) / %.so(.dll)")) --> MKN_GTN@{ shape: proc, label: "Get associated node" }
-        MKN_GTN --> MKN_FEF@{ shape: hex, label: "For each source file (.c)" }
-        MKN_FEF -->|Next| MKN_CDF@{ shape: proc, label: "Create dependency file" }
-        MKN_CDF --> MKN_CIF@{ shape: proc, label: "Create pre-processor file" }
-        MKN_CIF --> MKN_CAF@{ shape: proc, label: "Create assembly file" }
-        MKN_CAF --> MKN_COB@{ shape: proc, label: "Create object file" }
-        MKN_COB --> MKN_FEF
-        MKN_FEF -->|Done| MKN_DEP@{ shape: proc, label: "Get dependencies from the node's dep files" }
-        MKN_DEP --> MKN_BDD@{ shape: procs, label: "Build dependencies" }
-        MKN_BDD --> MKN_LNK@{ shape: proc, label: "Link object files and dependencies into %" }
-        MKN_LNK --> MKN_END@{ shape: double-circle, label: "Done" }
+    
+        subgraph MKO [ Build an Other node ]
+            MKO_START(("make %")) --> MKO_GTN@{ shape: proc, label: "Get associated node" }
+            MKO_GTN --> MKO_GTD@{ shape: proc, label: "Get dependencies from the node's Makefile" }
+            MKO_GTD --> MKO_BDD@{ shape: procs, label: "Build dependencies" }
+            MKO_BDD --> MKO_BLD@{ shape: procs, label: "Execute 'make %' in the node" }
+            MKO_BLD --> MKO_END@{ shape: double-circle, label: "Done" }
+        end
+        subgraph MKN [ Build a Library/Executable node ]
+            MKN_START(("make %(.exe) / %.so(.dll)")) --> MKN_GTN@{ shape: proc, label: "Get associated node" }
+            MKN_GTN --> MKN_FEF@{ shape: hex, label: "For each source file (.c)" }
+            MKN_FEF -->|Next| MKN_CDF@{ shape: proc, label: "Create dependency file" }
+            MKN_CDF --> MKN_CIF@{ shape: proc, label: "Create pre-processor file" }
+            MKN_CIF --> MKN_CAF@{ shape: proc, label: "Create assembly file" }
+            MKN_CAF --> MKN_COB@{ shape: proc, label: "Create object file" }
+            MKN_COB --> MKN_FEF
+            MKN_FEF -->|Done| MKN_DEP@{ shape: proc, label: "Get dependencies from the node's dep files" }
+            MKN_DEP --> MKN_BDD@{ shape: procs, label: "Build dependencies" }
+            MKN_BDD --> MKN_LNK@{ shape: proc, label: "Link object files and dependencies into %" }
+            MKN_LNK --> MKN_END@{ shape: double-circle, label: "Done" }
+        end
+        MKA_BON -..-> MKO_START
+        MKA_BDN -..-> MKN_START
+        MKO_BDD -..-> MKA_START
+        MKN_BDD -..-> MKA_START
+        MKN_END -..-> MKA_FEN
+        MKO_END -..-> MKA_FEN
     end
     RC -..-> RCG_START
     CLN -..-> RCG_CLN
     MKA -..-> MKA_START
-    MKA_BON -..-> MKO_START
-    MKA_BDN -..-> MKN_START
-    MKO_BDD -..-> MKA_START
-    MKN_BDD -..-> MKA_START
-    MKN_END -..-> FEN
-    MKO_END -..-> FEN
 ```
 
 ## Included Github Workflows
@@ -187,5 +188,6 @@ to discuss what you would like to change.
 ## License
 
 This project is under [GNU 3 License](https://github.com/Bitwise-re/c-template/blob/main/LICENSE)
+
 
 
