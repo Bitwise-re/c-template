@@ -101,7 +101,65 @@ To add ressources/assets to be directly inserted in the final product's root fol
 
 ```mermaid
 flowchart TD;
-    
+    START((make build)) --> RC@{ shape: procs, label: "Clean/Reset"}
+    RC --> MKA@{ shape: procs, label: "make all" }
+    MKA --> CLN@{ shape: procs, label: "Clean" }
+    CLN --> CPB@{ shape: proc, label: "Copy binaries to build folder" }
+    CPB --> CLI@{ shape: proc, label: "Remove import libraries from build folder" }
+    CLI --> CPA@{ shape: proc, label: "Copy assets to build folder" }
+    CPA --> CLB@{ shape: proc, label: "Empty bin folder" }
+    CLB --> END@{ shape: double-circle, label: "Done" }
+    subgraph RCG [ Clean/Reset ]
+        RCG_START((make cr)) --> RCG_BIN@{ shape: proc, label: "Empty bin directory" }
+        RCG_BIN --> RCG_BLD@{ shape: proc, label: "Empty build directory" }
+        RCG_BLD --> RCG_CLN@{ shape: f-circ, label: "Clean" }
+        RCG_CLN --> RCG_FEN@{ shape: hex, label: "For each Executable and Library node" }
+        RCG_FEN -->|Next| RCG_DLD@{ shape: proc, label: "Delete dependency files" }
+        RCG_DLD --> RCG_DLI@{ shape: proc, label: "Delete pre-processor files" }
+        RCG_DLI --> RCG_DLA@{ shape: proc, label: "Delete assembly files" }
+        RCG_DLA --> RCG_DLO@{ shape: proc, label: "Delete object files" }
+        RCG_DLO --> RCG_FEN
+        RCG_FEN ---->|Done| RCG_FEON@{ shape: hex, label: "For each Other node" }
+        RCG_FEON -->|Next| RCG_CON@{ shape: procs, label: "Execute 'make clean' in the node" }
+        RCG_CON --> RCG_FEON
+        RCG_FEON -->|Done| RCG_END@{ shape: double-circle, label: "Done" }
+    end
+    subgraph MKA_G [ make all ]
+        MKA_START((make all)) --> MKA_FEN@{ shape: hex, label: "For each Node" }
+        MKA_FEN -->|Next| MKA_INO@{ shape: diamond, label: "Is it an Other node ?" }
+        MKA_INO -->|Yes| MKA_BON@{ shape: procs, label: "Build Other node" }
+        MKA_INO -->|No| MKA_BDN@{ shape: procs, label: "Build Executable/Library node" }
+        MKA_FEN -->|Done| MKA_END@{ shape: double-circle, label: "Done" }
+    end
+    subgraph MKO [ Build an Other node ]
+        MKO_START(("make %")) --> MKO_GTN@{ shape: proc, label: "Get associated node" }
+        MKO_GTN --> MKO_GTD@{ shape: proc, label: "Get dependencies from the node's Makefile" }
+        MKO_GTD --> MKO_BDD@{ shape: procs, label: "Build dependencies" }
+        MKO_BDD --> MKO_BLD@{ shape: procs, label: "Execute 'make %' in the node" }
+        MKO_BLD --> MKO_END@{ shape: double-circle, label: "Done" }
+    end
+    subgraph MKN [ Build a Library/Executable node ]
+        MKN_START(("make %(.exe) / %.so(.dll)")) --> MKN_GTN@{ shape: proc, label: "Get associated node" }
+        MKN_GTN --> MKN_FEF@{ shape: hex, label: "For each source file (.c)" }
+        MKN_FEF -->|Next| MKN_CDF@{ shape: proc, label: "Create dependency file" }
+        MKN_CDF --> MKN_CIF@{ shape: proc, label: "Create pre-processor file" }
+        MKN_CIF --> MKN_CAF@{ shape: proc, label: "Create assembly file" }
+        MKN_CAF --> MKN_COB@{ shape: proc, label: "Create object file" }
+        MKN_COB --> MKN_FEF
+        MKN_FEF -->|Done| MKN_DEP@{ shape: proc, label: "Get dependencies from the node's dep files" }
+        MKN_DEP --> MKN_BDD@{ shape: procs, label: "Build dependencies" }
+        MKN_BDD --> MKN_LNK@{ shape: proc, label: "Link object files and dependencies into %" }
+        MKN_LNK --> MKN_END@{ shape: double-circle, label: "Done" }
+    end
+    RC -..-> RCG_START
+    CLN -..-> RCG_CLN
+    MKA -..-> MKA_START
+    MKA_BON -..-> MKO_START
+    MKA_BDN -..-> MKN_START
+    MKO_BDD -..-> MKA_START
+    MKN_BDD -..-> MKA_START
+    MKN_END -..-> FEN
+    MKO_END -..-> FEN
 ```
 
 ## Contributing
@@ -115,3 +173,4 @@ to discuss what you would like to change.
 ## License
 
 This project is under [GNU 3 License](https://github.com/Bitwise-re/c-template/blob/main/LICENSE)
+
