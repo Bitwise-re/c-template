@@ -57,6 +57,21 @@ git init
 └── vars.mk
 ```
 
+### Descriptions
+
+- `.github/` : Holds the repo files (workflows, issue templates, ...).
+- `bin/` : Holds the binaries created by make (.exe, .dll, .dll.a, .so, ...).
+- `build` : Holds the final product in the directory corresponding to the os used to build. The assets folder holds static files common to all os.
+- `scripts` : Holds the different shell scripts used by makefile.
+- `src` : Holds the source code organized in [nodes](#the-nodes).
+- `temp` : Holds temporary files used for developping without risking them to be uploaded to the repo.
+- `templates` : Holds templates for the [script to create nodes](./scripts/createnodes.sh)
+- `test` : Holds the testfiles use for quick tests like syntax or linking.
+- `LICENSE` : The project's license
+- `Makefile` : The main makefile, contains the recipes for the project
+- `vars.mk` : The project's makefile containing all variables and functions, can be safely imported by other makefiles (in [other nodes](#the-nodes) for instance)
+
+
 ## Usage
 
 ### The Nodes
@@ -189,6 +204,7 @@ to discuss what you would like to change.
 ## License
 
 This project is under [GNU 3 License](https://github.com/Bitwise-re/c-template/blob/main/LICENSE)
+
 
 
 
