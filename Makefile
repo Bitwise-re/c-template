@@ -1,157 +1,115 @@
-#enables the makefile secondary expansion
-.SECONDEXPANSION:
+include vars.mk
 
-#~ VARIABLES
+.PHONY: debug all build reset clean cr rc $(OFILES)
 
-#^ constants
-BIN_DIR:=./bin
-DIST_DIR:=./dist
-SRC_DIR:=./src
-SRC_EXT:=c
-HDR_EXT:=h
-OBJ_EXT:=o
-DEP_FILE:=.dep
-C:=gcc
-NODE_ARGS_FILE:=$(C).flags
+#~ RECIPES
+debug:
+	@echo "No debug script in ./Makefile"
 
-DEBUG_FLAGS:=-g3
-BUILD_FLAGS:=-s -O3
+test:
+	@echo "No test script in ./Makefile"
 
-#^ System dependent variables
-LIB_EXT:=
-DOTEXE:=
-IMP_LIB_EXT:=
-CFLAGS:=
-ifeq ($(OS),Windows_NT)
-	DOTEXE+=.exe
-	LIB_EXT+=dll
-	IMP_LIB_EXT+=lib
-	CFLAGS+=-mwindows
-else
-	LIB_EXT+=so
-	DOTEXE+=
-	IMP_LIB_EXT+=a
-endif
+all: $(OFILES) $(LIBS) $(EXECS)
 
-#^ Command specific variables
-
-ifeq ($(firstword $(MAKECMDGOALS)),build)
-	CFLAGS+=$(BUILD_FLAGS)
-else
-	CFLAGS+=$(DEBUG_FLAGS)
-endif
-
-#^ Processed variables
-
-EXEC_NODES:=$(shell ./scripts/getnodes.sh -E $(SRC_DIR))
-LIB_NODES:=$(shell ./scripts/getnodes.sh -L $(SRC_DIR))
-
-EXECS:=$(foreach node,$(EXEC_NODES),$(BIN_DIR)/$(shell basename $(node))$(DOTEXE))
-LIBS:=$(foreach node,$(LIB_NODES),$(BIN_DIR)/$(shell basename $(node)).$(LIB_EXT))
-
-DEP_FILES:=$(EXEC_NODES:%/=%/$(DEP_FILE)) $(LIB_NODES:%/=%/$(DEP_FILE))
-
-INCLUDE_DIRS_DIRECTIVE:=$(foreach node,$(LIB_NODES) $(EXEC_NODES),-I$(node))
-
-#~ MAIN RULES
-.PHONY: all reset debug eod_%_eod node_%
-
-all: $(DEP_FILES) $(EXECS)
-
-debug: 
-	@echo no debug script in debug recipe
-
-clean:
-	@echo "deleting $(OBJ_EXT) files from $(BIN_DIR)..."
-	@rm -f $(BIN_DIR)/*.$(OBJ_EXT)
-	@echo "Done !"
-	
+build: rc
+	$(MAKE) all
+	$(MAKE) clean
+	cp -r ./$(BINDIR)/* $(BUILDDIR) ||:
+	$(IMPLIBCLEANUP)
+	cp -r ./$(ASSETDIR)/* $(BUILDDIR) ||:
+	rm -r ./$(BINDIR)/* ||:
 
 reset:
-	@echo "deleting everything from $(BIN_DIR)..."
-	@echo "deleting dependencies files..."
-	@rm -f $(BIN_DIR)/* !.gitkeep
-	@rm -f $(DEP_FILES)
-	@echo "Done !"
+	rm -r ./$(BINDIR)/* 2>/dev/null ||:
+	rm -r ./$(BUILDDIR)/* 2>/dev/null ||:
 
-_buildreset:
-	@echo "deleting binaries from $(DIST_DIR)..."
-	@rm -f $(DIST_DIR)/*$(DOTEXE)
-	@rm -f $(DIST_DIR)/*.$(LIB_EXT)
-	@echo "Done !"
+clean:
+	@echo "cleaning up library and executable nodes..."
+	@rm -f $(foreach node,$(ENODES) $(LNODES),$(node)/*.$(DEPEXT) $(node)/*.$(PPFEXT) $(node)/*.$(ASMEXT) $(node)/*.$(OBJEXT))
+	
+	@for node in $(ONODES) ; do \
+		if [ $$($(MAKE) -qC $$node clean 2>/dev/null 1>&2 ||: && echo $$?) -eq 1 ]; then \
+			echo "cleaning up $$node..."; \
+			$(MAKE) -C $$node clean ; \
+		fi \
+	done
 
-build: _buildreset reset all clean
-	@echo "copying output to $(DIST_DIR)..."
-	@cp -f $(BIN_DIR)/*$(DOTEXE) $(DIST_DIR) 2>/dev/null || :
-	@cp -f $(BIN_DIR)/*.$(LIB_EXT) $(DIST_DIR) 2>/dev/null || :
-	@echo "Done !"
-	@echo ""
-	@echo "-------- BUILDING COMPLETE --------"
+cr: rc
+rc: reset clean
 
+#make the files in the bin folder
+$(EXECS) $(LIBS): %: $(BINDIR)/%
 
-#~ NODES SHENANIGANS
+#implibs are created at the same time as their corresponding dynamic library
+$(call format_lib,%).$(SLFEXT): $(call format_lib,%)
 
-#^ executable nodes
-$(EXECS): $(BIN_DIR)/%$(DOTEXE): $$(wildcard $(SRC_DIR)/$$*/*.$(SRC_EXT)) $$(wildcard $(SRC_DIR)/$$*/*.$(HDR_EXT)) $$(shell [ "$$(shell cat $(SRC_DIR)/$$*/$(DEP_FILE) 2> /dev/null)" != "" ] && cat $(SRC_DIR)/$$*/$(DEP_FILE) 2> /dev/null || echo "eod_$(SRC_DIR)/$$*/_eod")
-	@echo
-	@echo "------------- EXECUTABLE NODE PROCESSING START : $@ -------------"
-	@echo "processed dependencies : $(foreach dep,$(filter-out eod_$(SRC_DIR)/$*/_eod,$^),$(patsubst %$(HDR_EXT),,$(patsubst %$(SRC_EXT),,$(dep))))"
-	$(C) -o $@ $(wildcard $(SRC_DIR)/$*/*.$(SRC_EXT)) $(foreach file,$(foreach dep,$(filter-out eod_$(SRC_DIR)/$*/_eod,$^),$(patsubst %$(HDR_EXT),,$(patsubst %$(SRC_EXT),,$(dep)))),$(BIN_DIR)/$(file).$(LIB_EXT).$(IMP_LIB_EXT)) @$(SRC_DIR)/$*/$(NODE_ARGS_FILE) $(INCLUDE_DIRS_DIRECTIVE) $(CFLAGS)
-	@echo "Done !"
+#^ executables linking
+$(foreach exe,$(EXECS),$(BINDIR)/$(exe)): $$(call libexec-to-obj,$$@,%$(DOTEXE))
+	@echo "building $@ dependencies : $(EDEP)"
+	$(if $(EDEP),$(MAKE) $(EDEP))
+	@echo "linking $^ along $(EDEP) into $@"
+	$(CC) -o $@ $^ $(call link-deps,$(EDEP)) $(call NFLAGS, $(LINKING_STEP_FLAG_ID)) $(LFLAGS)
 
-#^ library/binary nodes
-$(LIBS): $(BIN_DIR)/%.$(LIB_EXT): $$(wildcard $(SRC_DIR)/$$*/*.$(SRC_EXT)) $$(wildcard $(SRC_DIR)/$$*/*.$(HDR_EXT)) $$(shell [ "$$(shell cat $(SRC_DIR)/$$*/$(DEP_FILE) 2> /dev/null)" != "" ] && cat $(SRC_DIR)/$$*/$(DEP_FILE) 2> /dev/null || echo "eod_$(SRC_DIR)/$$*/_eod")
-	@echo
-	@echo "------------- LIBRARY/BINARY NODE PROCESSING START : $@ -------------"
-	@echo "processed dependencies : $(foreach dep,$(filter-out eod_$(SRC_DIR)/$*/_eod,$^),$(patsubst %$(HDR_EXT),,$(patsubst %$(SRC_EXT),,$(dep))))"
-	@if [ -d $(SRC_DIR)/$*/bin/ ]; then \
-		cp -f $(SRC_DIR)/$*/bin/$(shell basename $@) $@ ; \
-		cp -f $(SRC_DIR)/$*/bin/$(shell basename $@.$(IMP_LIB_EXT)) $@.$(IMP_LIB_EXT) ; \
+#^ libraries linking
+$(foreach lib,$(LIBS),$(BINDIR)/$(lib)): $$(call libexec-to-obj,$$@,$(call format_lib,%))
+	@echo "building $@ dependencies : $(LDEP)"
+	$(if $(LDEP),$(MAKE) $(LDEP),@echo no dep to build)
+	@echo "linking $^ along $(LDEP) into $@"
+	$(CC) -shared -o $@ $^ $(call link-deps,$(LDEP)) $(call NFLAGS, $(LINKING_STEP_FLAG_ID)) $(LFLAGS) $(CREATEIMPLIB)
+ 
+
+#^ object files assembling
+%.$(OBJEXT): %.$(ASMEXT)
+	@echo "Assembling $< into $@"
+	$(CC) -c -o $@ $< $(call NFLAGS, $(ASSEMBLING_STEP_FLAG_ID)) $(ASMFLAGS)
+
+#assembly files compiling
+%.$(ASMEXT): %.$(PPFEXT)
+	@echo "Compiling $< into $@"
+	$(CC) -S -o $@ $< $(call NFLAGS, $(COMPILING_STEP_FLAG_ID)) $(CMPFLAGS)
+
+#preprocessed file preprocessing :)
+%.$(PPFEXT): %.$(DEPEXT) $$(call getppfdep,$$@) # getppfdep usefull when dep file already exists to determine wether to remake it or not
+	@echo "deps : $^ $(shell cat $<)"
+	@echo "Pre-processing $(shell cat $<) into $@"
+	$(CC) -E -o $@ $(firstword $(shell cat $<)) $(call NFLAGS, $(PREPROCESSING_STEP_FLAG_ID)) $(PPFLAGS) -D$(shell echo '$(notdir $(patsubst %/,%,$(dir $*)))_EXPORT' | tr '[:lower:]' '[:upper:]')
+
+#dependency file creation
+%.$(DEPEXT): %.$(SRCEXT)
+	@echo "Fetching dependencies for $<"
+	$(CC) -MM $< $(call NFLAGS, $(DEPENDENCY_STEP_FLAG_ID)) $(PPFLAGS) | sed -z 's/ \\\n//g' | cut -f 2 -d ':' | cut -c2- > $@
+
+#catch-all rule for source and header files
+%.$(SRCEXT) %.$(HDREXT): ;
+
+#Ofiles :
+$(OFILES): %: $$(shell $(MAKE) -C$$(dir $$@) -qp 2> /dev/null | grep -w "__DEPS:=" | cut -c8-)
+	@if [ $$($(MAKE) -C$(dir $@) $$(basename $@) -n 2>/dev/null 1>&2 ||: && echo $$?) -eq 0 ]; then \
+		echo "building $@ externally" ; \
+		$(MAKE) -C$(dir $@) $$(basename $@); \
 	else \
-		( cd $(SRC_DIR)/$* ; $(C) -c $(foreach file,$(wildcard $(SRC_DIR)/$*/*.$(SRC_EXT)),$(shell basename $(file))) @$(NODE_ARGS_FILE) $(foreach dir,$(INCLUDE_DIRS_DIRECTIVE),$(dir:-I%=-I../../%)) $(CFLAGS)) ; \
-		mv $(SRC_DIR)/$*/$(shell basename $(subst .$(LIB_EXT),.$(OBJ_EXT),$@)) $(subst .$(LIB_EXT),.$(OBJ_EXT),$@) ; \
-		$(C) -shared -o $@ $(subst .$(LIB_EXT),.$(OBJ_EXT),$@) -Wl,--out-implib,$@.$(IMP_LIB_EXT) $(CFLAGS); \
-	fi;
-	@echo "Done !"
-
-#^ dependencies files
-#checks for includes in all c files of a node, keep only the ones that correspond to other nodes from the project and write them all in a file
-# also checks if a node is a binary node (binaries are to be downloaded and put in the bin/ folder of the node) and if so, checks if all the required binaries are in it
-$(DEP_FILES): %/$(DEP_FILE): $$(wildcard $$(subst /$(DEP_FILE),,$$@)/*.$(SRC_EXT))
-	@echo "building $@..."
-	@if ! [ -d ./$(dir $@)bin/ ]; then \
-		echo $(filter-out $(shell basename $(basename $@)),$(filter $(foreach node,$(EXEC_NODES) $(LIB_NODES),$(shell basename $(node))),$(foreach file,$(shell grep -sh "#include" . $^ | grep "." | sed 's/#include <//' | sed 's/>//' | sed 's/ //g'),$(basename $(shell basename $(file)))))) > $@ ; \
-	elif ! [ -f ./$(dir $@)bin/dependencies.lnk ]; then \
-			echo "Error, no binary dependencies file nor source code in node $@" ;\
-	else \
-		for f in $$(tail -n+2 ./$(dir $@)bin/dependencies.lnk) ; do\
-			if ! [ -f ./$(dir $@)bin/$$f ]; then \
-				echo "Node $@ is dependent of file ./$(dir $@)bin/$$f which is missing, check the url in ./$(dir $@)bin/dependencies.lnk to download it"; \
-				start $$(head -n 1 ./$(dir $@)bin/dependencies.lnk); \
-				echo "Missing file, exiting..."; \
-				exit 1; \
-			fi \
-		done \
-	fi;
-	@echo "Done !"
-
-#^ Node to file
-$(foreach node,$(EXEC_NODES),$(shell basename $(node))): %: $(BIN_DIR)/%$(DOTEXE)
-$(foreach node,$(LIB_NODES),$(shell basename $(node))): %: $(BIN_DIR)/%.$(LIB_EXT) #$(BIN_DIR)/%.$(IMP_LIB_EXT)
-
-#^ Endpoint node from a dependency perspective
-$(foreach node,$(EXEC_NODES) $(LIB_NODES),eod_$(node)_eod): %:
-	@echo "$(subst eod_,,$(subst _eod,,$@)) does not have a dependencies (.dep) file, assuming end-of-dep node"
-
-#~ NODE CREATOR
+		echo "Error : no rule found for $$(basename $@) in $(dir $@)" ; \
+		false ; \
+	fi
 
 
-node_% node_e_%:
-	@./scripts/create-node.sh -S$(SRC_DIR) $*
 
-node_l_%:
-	@./scripts/create-node.sh -L -S$(SRC_DIR) $*
+#~ OTHERS
 
-node_b_%:
-	@./scripts/create-node.sh -B -S$(SRC_DIR) $*
+#node creation
+__nl_%:
+	@./$(SCRIPTDIR)/createnode.sh -L ./$(SRCDIR)/$(patsubst __nl_%,%,$@)
 
+__ne_%:
+	@./$(SCRIPTDIR)/createnode.sh -E ./$(SRCDIR)/$(patsubst __ne_%,%,$@)
+
+__no_%:
+	@./$(SCRIPTDIR)/createnode.sh -O ./$(SRCDIR)/$(patsubst __no_%,%,$@)
+
+#*checks if all required scripts are present
+ifeq (,$(wildcard $(SCRIPTDIR)/getnodes.sh))
+$(error Required shell script not found in script directory ($(SCRIPTDIR)) : getnodes.sh)
+endif
+ifeq (,$(wildcard $(SCRIPTDIR)/createnode.sh))
+$(error Required shell script not found in script directory ($(SCRIPTDIR)) : createnode.sh)
+endif
