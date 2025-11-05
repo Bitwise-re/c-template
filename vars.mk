@@ -55,7 +55,7 @@ node-to-libs=$(foreach node,$(1),$(call format_lib,$(shell basename $(node))))
 node-to-ofiles=$(foreach node,$(1),$(foreach file,$(shell $(MAKE) -C$(node) -qp 2> /dev/null | grep -w "__FILES :=" | grep -vw "node-to-ofiles" | cut -c12-),$(node)/$(file)))
 
 #create the dependencies for and from an object file
-obj-dep=$(filter-out $(2),$(foreach dfile,$(shell find $(dir $(1))/ -name '*.$(DEPEXT)'),$(foreach dep,$(shell cat $(dfile) 2>/dev/null ||:),$(filter $(EXECS),$(call node-to-execs, $(dir $(dep)))) $(filter $(LIBS),$(call node-to-libs, $(dir $(dep)))) $(filter $(OFILES),$(call node-to-ofiles, ./$(dir $(dep)))))))
+obj-dep=$(filter-out $(2),$(foreach dfile,$(shell find ./$(dir $(1))/ -name '*.$(DEPEXT)'),$(foreach dep,$(shell cat $(dfile) 2>/dev/null ||:),$(filter $(EXECS),$(call node-to-execs, $(dir $(dep)))) $(filter $(LIBS),$(call node-to-libs, $(dir $(dep)))) $(filter $(OFILES),$(call node-to-ofiles, ./$(dir $(dep)))))))
 
 #dependency formulas
 EDEP = $(call obj-dep,$(call libexec-to-obj,$@,%$(DOTEXE)),$(notdir $@))
