@@ -47,37 +47,38 @@ $(call format_lib,%).$(SLFEXT): $(call format_lib,%)
 $(foreach exe,$(EXECS),$(BINDIR)/$(exe)): $$(call libexec-to-obj,$$@,%$(DOTEXE))
 	@echo "building $@ dependencies : $(EDEP)"
 	$(if $(EDEP),$(MAKE) $(EDEP))
+	@echo "$(patsubst $(PREFLAG)%,%,$(filter $(PREFLAG)%, $(shell echo $$(shell cat $(dir $<)/$(LINKING_STEP_FLAG_ID).flags 2>/dev/null ||:))))"
 	@echo "linking $^ along $(EDEP) into $@"
-	$(CC) -o $@ $^ $(call link-deps,$(EDEP)) $(call NFLAGS, $(LINKING_STEP_FLAG_ID)) $(LFLAGS)
+	$(CC) -o $@ $^ $(call link-deps,$(EDEP)) $(call NFLAGS,$(LINKING_STEP_FLAG_ID)) $(LFLAGS)
 
 #^ libraries linking
 $(foreach lib,$(LIBS),$(BINDIR)/$(lib)): $$(call libexec-to-obj,$$@,$(call format_lib,%))
 	@echo "building $@ dependencies : $(LDEP)"
 	$(if $(LDEP),$(MAKE) $(LDEP),@echo no dep to build)
 	@echo "linking $^ along $(LDEP) into $@"
-	$(CC) -shared -o $@ $^ $(call link-deps,$(LDEP)) $(call NFLAGS, $(LINKING_STEP_FLAG_ID)) $(LFLAGS) $(CREATEIMPLIB)
+	$(CC) -shared -o $@ $^ $(call link-deps,$(LDEP)) $(call NFLAGS,$(LINKING_STEP_FLAG_ID)) $(LFLAGS) $(CREATEIMPLIB)
  
 
 #^ object files assembling
 %.$(OBJEXT): %.$(ASMEXT)
 	@echo "Assembling $< into $@"
-	$(CC) -c -o $@ $< $(call NFLAGS, $(ASSEMBLING_STEP_FLAG_ID)) $(ASMFLAGS)
+	$(CC) -c -o $@ $< $(call NFLAGS,$(ASSEMBLING_STEP_FLAG_ID)) $(ASMFLAGS)
 
 #assembly files compiling
 %.$(ASMEXT): %.$(PPFEXT)
 	@echo "Compiling $< into $@"
-	$(CC) -S -o $@ $< $(call NFLAGS, $(COMPILING_STEP_FLAG_ID)) $(CMPFLAGS)
+	$(CC) -S -o $@ $< $(call NFLAGS,$(COMPILING_STEP_FLAG_ID)) $(CMPFLAGS)
 
 #preprocessed file preprocessing :)
 %.$(PPFEXT): %.$(DEPEXT) $$(call getppfdep,$$@) # getppfdep usefull when dep file already exists to determine wether to remake it or not
 	@echo "deps : $^ $(shell cat $<)"
 	@echo "Pre-processing $(shell cat $<) into $@"
-	$(CC) -E -o $@ $(firstword $(shell cat $<)) $(call NFLAGS, $(PREPROCESSING_STEP_FLAG_ID)) $(PPFLAGS) -D$(shell echo '$(notdir $(patsubst %/,%,$(dir $*)))_EXPORT' | tr '[:lower:]' '[:upper:]')
+	$(CC) -E -o $@ $(firstword $(shell cat $<)) $(call NFLAGS,$(PREPROCESSING_STEP_FLAG_ID)) $(PPFLAGS) -D$(shell echo '$(notdir $(patsubst %/,%,$(dir $*)))_EXPORT' | tr '[:lower:]' '[:upper:]')
 
 #dependency file creation
 %.$(DEPEXT): %.$(SRCEXT)
 	@echo "Fetching dependencies for $<"
-	$(CC) -MM $< $(call NFLAGS, $(DEPENDENCY_STEP_FLAG_ID)) $(PPFLAGS) | sed -z 's/ \\\n//g' | cut -f 2 -d ':' | cut -c2- > $@
+	$(CC) -MM $< $(call NFLAGS,$(DEPENDENCY_STEP_FLAG_ID)) $(PPFLAGS) | sed -z 's/ \\\n//g' | cut -f 2 -d ':' | cut -c2- > $@
 
 #catch-all rule for source and header files
 %.$(SRCEXT) %.$(HDREXT): ;
