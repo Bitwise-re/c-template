@@ -47,7 +47,6 @@ jobs:
     - name: Build
       shell: msys2 {0}
       run: |
-        which gcc
         make build DEPLOY=True
       
     - name: Compress build into zip archive
