@@ -22,10 +22,12 @@ case $1 in
 		cp ./templates/main.c ./$2/
 	;;
 	"-L")
-		echo "creating library node $2..."
+		echo "creating library node $2... s/\$1/$(basename ${2^^})/g ./$2/sayhello.c"
 		mkdir -p $2
-		cp ./templates/lib.c ./$2/
-		cp ./templates/lib.h ./$2/
+		cp ./templates/sayhello.c ./$2/
+		cp ./templates/sayhello.h ./$2/
+		sed -i s/\$1/$(basename ${2^^})/g ./$2/sayhello.h
+		sed -i s/\$1/$(basename ${2^^})/g ./$2/sayhello.c
 	;;
 esac
 echo "Done"
