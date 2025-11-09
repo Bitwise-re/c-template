@@ -1,7 +1,7 @@
-#include "lib.h"
+#include "sayhello.h"
 #include <stdio.h>
 
-int libfun(){
+$1API int sayHello(){
 	printf("Hello From Library !");
 	return 0;
 }
